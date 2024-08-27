@@ -1,0 +1,99 @@
+#version 330 core
+precision highp float;
+
+in vec2 fragCoord; // Assuming you pass the fragment coordinates from the vertex shader
+out vec4 screenColor;
+
+uniform vec2 u_resolution;
+uniform float u_time; // Pass elapsed time for animation
+
+uniform float fftMagnitudes[32]; // Array of magnitudes from the FFT
+
+
+
+// Function to create pseudo-random value between 0.0 and 1.0
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+// Function to randomly make some pixels in the top half flicker white
+vec3 makeTopHalfFlicker(vec2 uv, vec3 currentColor) {
+    // Define the threshold for the top half
+    float topHalfThreshold = 0.35;
+    // Define the probability threshold for turning a pixel white
+    float probabilityThreshold = 0.999; // Adjust this value to control the density of flickering pixels
+
+    // Introduce a time-dependent factor that changes every frame to ensure flickering
+    float timeFactor = fract(cos(u_time) * 4.016)/0.80; // Adjust the multiplier to control the flicker speed
+
+    // Combine UV, time, and a unique seed to ensure the randomness changes every frame
+    float randomValue = rand(uv * timeFactor * vec2(12.34, 56.78));
+
+    // Check if the pixel is in the top half and randomly decide if it should flicker white
+    if (uv.y > topHalfThreshold && randomValue > probabilityThreshold) {
+        return vec3(1.0); // Return pure white for flicker
+    } else {
+        return currentColor; // Return the original color
+    }
+}
+
+
+// Classic Perlin noise function
+float perlinNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f*f*(3.0-2.0*f);
+
+    float n = dot(vec2(1.0, 5.0), i); // Random seed
+
+    float a = rand(i);
+    float b = rand(i + vec2(1.0, 0.0));
+    float c = rand(i + vec2(0.0, 1.0));
+    float d = rand(i + vec2(1.0, 1.0));
+
+    float noise = mix(a, b, u.x) +
+                  (c - a)* u.y * (1.0 - u.x) +
+                  (d - b) * u.x * u.y;
+
+    return noise;
+}
+
+// Function to interpolate between hard-coded colors based on a factor
+vec3 interpolateColors(float factor) {
+    vec3 color8 = vec3(0.000,0.018,0.065); // Dark blue
+    vec3 color7 = vec3(0.096,0.096,0.335); // Medium blue
+    vec3 color6 = vec3(0.160,0.160,0.320); // Light blue
+    vec3 color5 = vec3(0.167,0.167,0.250); // Pale blue
+    vec3 color4 = vec3(0.5, 0.5, 0.5); // Grey
+    vec3 color3 = vec3(0.365,0.365,0.365); // Light grey
+    vec3 color2 = vec3(0.345,0.259,0.259); // Brownish grey
+    vec3 color1 = vec3(0.115,0.077,0.077); // Dark brown
+
+    // Interpolate between colors based on the factor
+    if (factor < 0.125) return mix(color1, color2, factor / 0.125);
+    else if (factor < 0.25) return mix(color2, color3, (factor - 0.125) / 0.125);
+    else if (factor < 0.375) return mix(color3, color4, (factor - 0.25) / 0.125);
+    else if (factor < 0.5) return mix(color4, color5, (factor - 0.375) / 0.125);
+    else if (factor < 0.625) return mix(color5, color6, (factor - 0.5) / 0.125);
+    else if (factor < 0.75) return mix(color6, color7, (factor - 0.625) / 0.125);
+    else if (factor < 0.875) return mix(color7, color8, (factor - 0.75) / 0.125);
+    else return mix(color8, color1, (factor - 0.875) / 0.125);
+}
+
+// Main function to create gradient noise background
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    float noiseValue = perlinNoise(uv * 1.0 + u_time * 0.2); // Scale and animate the noise
+    noiseValue = smoothstep(-3.800, 6.6, noiseValue); // Soften the noise edges
+
+    // Calculate gradient factor based on vertical position and noise
+    float gradientFactor = uv.y * noiseValue;
+
+    // Interpolate between the colors based on the gradient factor
+    vec3 gradientColor = interpolateColors(gradientFactor);
+
+    // Apply the function to make some pixels in the top half flicker white
+    vec3 finalColor = makeTopHalfFlicker(uv, gradientColor);
+
+    screenColor = vec4(finalColor, 1.0);
+}

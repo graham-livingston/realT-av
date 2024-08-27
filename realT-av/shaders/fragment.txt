@@ -1,0 +1,356 @@
+#version 330 core
+
+in vec2 fragCoord; // Assuming you pass the fragment coordinates from the vertex shader
+out vec4 screenColor;
+
+//If you were to redesign, let's note that there are 8 bins in the FFT, if there are 8 rows, then if a certain threshold is met, a row could possibly be 
+//broken into many rows through the use of ROW[INDEX] = number_of_notes_in_row*ROW[Index] and then the row could be broken into many rows]. that way if a bin well that makes sense,
+// Then simply multiply by;
+// the color determined by the midi note, probably need to figure out some much more meaningful mapping
+//for the midi, but that's a start.
+//then make a base that if the row is colored by the midi note,
+
+uniform vec2 u_resolution;
+uniform float u_time; // Pass elapsed time for animation
+uniform float u_numpadValue; // Pass the value of the numpad key pressed
+uniform int u_colorIndex;
+
+#define NUM_ROWS 8
+
+struct RowProperties {
+    float speed;
+    float direction;
+};
+
+uniform RowProperties rows[NUM_ROWS];
+
+
+
+uniform float fftMagnitudes[128]; // Array of magnitudes from the FFT
+uniform float u_fftAverage; // Format of the FFT data
+
+struct IntegratedData {
+    float notesCount;
+    float magnitudesCount;
+    float mean;
+    float median;
+    float ranking;
+};
+
+//Midi color Map
+vec3 mcolors[] = vec3[](
+    vec3(0.0, 0.0, 0.0), // white
+    vec3(1.0, 0.25, 0.25), // and white
+    vec3(1.0, 0.75, 0.8), // pink
+    vec3(0.5, 0.0, 0.5), // and pink
+    vec3(1.0, 0.25, 0.25), // red
+    vec3(1.0, 0.75, 0.8), // and red
+    vec3(0.5, 0.0, 0.5), // grey
+    vec3(1.0, 0.25, 0.25), // blue
+    vec3(1.0, 0.75, 0.8), // and blue
+    vec3(0.5, 0.0, 0.5), // purple
+    vec3(1.0, 0.25, 0.25), // and purple
+    vec3(1.0, 0.75, 0.8), // violet
+    vec3(0.5, 0.0, 0.5), // and violet
+    vec3(1.0, 0.25, 0.25), // brown
+    vec3(1.0, 0.75, 0.8), // and brown
+    vec3(0.5, 0.0, 0.5), // black
+    vec3(0.5, 0.0, 0.5), // and black
+    vec3(0.5, 0.0, 0.5), // quantum
+    vec3(0.5, 0.0, 0.5), // and quantum
+    vec3(0.5, 0.0, 0.5), // and grey
+    vec3(1.0, 1.0, 1.0) // grey question
+);
+
+uniform IntegratedData integratedData[21]; // Replace <number_of_ranges> with the actual number
+
+//-----------------------------------------Hash------------------------------------------
+// Simple hash function
+vec2 hash2( vec2 p ) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p);
+}
+//-----------------------------------------Noise Functions-----------------------------------------
+
+// Basic noise function
+float noise(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+
+// Fractal Brownian Motion function
+float fbm(vec2 st) {
+    float value = 0.0;
+    float amplitude = 0.4;
+    float frequency = 0.0;
+    // Iterate through octaves
+    for (int i = 0; i < 5; ++i) {
+        value += amplitude * noise(st);
+        st *= 0.08;
+        amplitude *= 1.5;
+    }
+    return value;
+}
+
+// Perlin noise function
+float perlinNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f*f*(3.0-2.0*f);
+
+    float n = dot(vec2(1.0, 5.0), i); // Random seed
+
+    float a = noise(i);
+    float b = noise(i + vec2(1.0, 0.0));
+    float c = noise(i + vec2(0.0, 1.0));
+    float d = noise(i + vec2(1.0, 1.0));
+
+    float pNoise = mix(a, b, u.x) +
+                  (c - a)* u.y * (1.0 - u.x) +
+                  (d - b) * u.x * u.y;
+
+    return pNoise;
+}
+
+// Improved noise function
+float noise2(vec2 st) {
+    vec2 i = floor(st);
+    vec2 f = fract(st);
+
+    // Four corners in 2D of a tile
+    float a = dot(hash2(i), f);
+    float b = dot(hash2(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0));
+    float c = dot(hash2(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0));
+    float d = dot(hash2(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0));
+
+    // Smooth Interpolation
+
+    // Cubic Hermite Curve.  Same as SmoothStep()
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    // Mix 4 corners percentages
+    return mix(a, b, u.x) +
+           (c - a) * u.y * (1.0 - u.x) +
+           (d - b) * u.x * u.y;
+}
+
+
+// Function to randomly flicker some pixels in the top half flicker white
+vec3 makeTopHalfFlicker(vec2 uv, vec3 currentColor) {
+    // Define the threshold for the top half
+    float topHalfThreshold = 0.009;
+    // Define the probability threshold for turning a pixel white
+    float probabilityThreshold = 0.999; // Adjust this value to control the density of flickering pixels
+
+    // Introduce a time-dependent factor that changes every frame to ensure flickering
+    float timeFactor = fract(cos(u_time) * 4.016)/0.80; // Adjust the multiplier to control the flicker speed
+
+    // Combine UV, time, and a unique seed to ensure the randomness changes every frame
+    float randomValue = noise(uv * timeFactor * vec2(12.34, 56.78));
+
+    // Check if the pixel is in the top half and randomly decide if it should flicker white
+    if (uv.y > topHalfThreshold && randomValue > probabilityThreshold) {
+        return vec3(1.0); // Return pure white for flicker
+    } else {
+        return currentColor; // Return the original color
+    }
+}
+
+
+// Function to draw a line using the smoothstep function for anti-aliasing
+float drawLine(vec2 p1, vec2 p2, vec2 uv, float width) {
+    vec2 pa = p1 - uv;
+    vec2 ba = p2 - p1;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    float dist = length(pa - ba * h);
+    return 1.0 - smoothstep(0.0, width, dist);
+}
+
+
+// Modified circle function using fBm for blurring the edge
+float circle(in vec2 _st, in float _radius){
+    vec2 dist = _st - vec2(0.5);
+    float edgeBlur = fbm(_st * u_time * 0.5); // Use fBm to create edge blur
+    return 1.0 - smoothstep(_radius - (_radius * 0.11) - edgeBlur,
+                            _radius + (_radius * 0.01) + edgeBlur,
+                            dot(dist, dist) * 40.784);
+}
+
+vec3 interpolateColors(float factor) {
+    vec3 color8 = vec3(0.000,0.018,0.065); // Dark blue
+    vec3 color7 = vec3(0.096,0.096,0.093); // Medium blue
+    vec3 color6 = vec3(0.160,0.153,0.160); // Light blue
+    vec3 color5 = vec3(0.167,0.167,0.250); // Pale blue
+    vec3 color4 = vec3(0.05, 0.05, 0.03); // Grey
+    vec3 color3 = vec3(0.365,0.365,0.365); // Light grey
+    vec3 color2 = vec3(0.095,0.093,0.095); // Brownish grey
+    vec3 color1 = vec3(0.115,0.077,0.077); // Dark brown
+
+    // Interpolate between colors based on the factor
+    if (factor < 0.125) return mix(color1, color2, factor / 0.125);
+    else if (factor < 0.25) return mix(color2, color3, (factor - 0.125) / 0.125);
+    else if (factor < 0.375) return mix(color3, color4, (factor - 0.25) / 0.125);
+    else if (factor < 0.5) return mix(color4, color5, (factor - 0.375) / 0.125);
+    else if (factor < 0.625) return mix(color5, color6, (factor - 0.5) / 0.125);
+    else if (factor < 0.75) return mix(color6, color7, (factor - 0.625) / 0.125);
+    else if (factor < 0.875) return mix(color7, color8, (factor - 0.75) / 0.125);
+    else return mix(color8, color1, (factor - 0.875) / 0.125);
+}
+
+
+
+int index0 = 0; // Replace with the desired index
+int index1 = 1; // Replace with the desired index
+int index2 = 2; // Replace with the desired index
+int index3 = 3; // Replace with the desired index
+int index4 = 4; // Replace with the desired index
+int index5 = 5; // Replace with the desired index
+int index6 = 6; // Replace with the desired index
+int index7 = 7; // Replace with the desired index
+int index8 = 8; // Replace with the desired index
+int index9 = 9; // Replace with the desired index
+int index10 = 10; // Replace with the desired index
+
+
+IntegratedData data1 = integratedData[index0]; // Retrieve the struct at the specified index
+
+IntegratedData data2 = integratedData[index1]; // Retrieve the struct at the specified index
+
+IntegratedData data3 = integratedData[index2]; // Retrieve the struct at the specified index
+
+IntegratedData data4 = integratedData[index3]; // Retrieve the struct at the specified index
+
+IntegratedData data5 = integratedData[index4]; // Retrieve the struct at the specified index
+
+IntegratedData data6 = integratedData[index5]; // Retrieve the struct at the specified index
+
+IntegratedData data7 = integratedData[index6]; // Retrieve the struct at the specified index
+
+IntegratedData data8 = integratedData[index7]; // Retrieve the struct at the specified index
+
+IntegratedData data9 = integratedData[index8]; // Retrieve the struct at the specified index
+
+IntegratedData data10 = integratedData[index9]; // Retrieve the struct at the specified index
+
+IntegratedData data11 = integratedData[index10]; // Retrieve the struct at the specified index
+
+
+    float notesCount1 = data1.notesCount;
+    float magnitudesCount1 = data1.magnitudesCount;
+    float mean1 = data1.mean;
+    float median1 = data1.median;
+    float ranking1 = data1.ranking;
+
+    
+    float notesCount2 = data2.notesCount;
+    float magnitudesCount2 = data2.magnitudesCount;
+    float mean2 = data2.mean;
+    float median2 = data2.median;
+    float ranking2 = data2.ranking;
+    
+    float notesCount3 = data3.notesCount;
+    float magnitudesCount3 = data3.magnitudesCount;
+    float mean3 = data3.mean;
+    float median3 = data3.median;
+    float ranking3 = data3.ranking;
+
+    
+    float notesCount4 = data4.notesCount;
+    float magnitudesCount4 = data4.magnitudesCount;
+    float mean4 = data4.mean;
+    float median4 = data4.median;
+    float ranking4 = data4.ranking;
+
+    
+    float notesCount5 = data5.notesCount;
+    float magnitudesCount5 = data5.magnitudesCount;
+    float mean5 = data5.mean;
+    float median5 = data5.median;
+    float ranking5 = data5.ranking;
+
+    
+    float notesCount6 = data6.notesCount;
+    float magnitudesCount6 = data6.magnitudesCount;
+    float mean6 = data6.mean;
+    float median6 = data6.median;
+    float ranking6 = data6.ranking;
+
+    
+    float notesCount7 = data7.notesCount;
+    float magnitudesCount7 = data7.magnitudesCount;
+    float mean7 = data7.mean;
+    float median7 = data7.median;
+    float ranking7 = data7.ranking;
+
+    
+    float notesCount8 = data8.notesCount;
+    float magnitudesCount8 = data8.magnitudesCount;
+    float mean8 = data8.mean;
+    float median8 = data8.median;
+    float ranking8 = data8.ranking;
+
+    
+    float notesCount9 = data9.notesCount;
+    float magnitudesCount9 = data9.magnitudesCount;
+    float mean9 = data9.mean;
+    float median9 = data9.median;
+    float ranking9 = data9.ranking;
+
+void main() {
+    //vec2 uv = (2.0 * fragCoord - u_resolution) / min(u_resolution.x, u_resolution.y);
+    vec2 st = gl_FragCoord.xy / u_resolution.xy;
+    
+    // Adjust st for the aspect ratio of the screen
+    st.x *= u_resolution.x / u_resolution.y;
+
+    vec3 color = vec3(0.0);
+
+    //vec3 color = vec3(0.1);
+    
+    if (u_numpadValue == 1.0) {
+    float pct = distance(st,vec2(ranking1,sin(st.x)+magnitudesCount1));
+	float circ = circle(vec2(u_fftAverage*mean1,median1),ranking1);
+    float circ2 = circle(vec2(u_fftAverage,0.5),1.0);
+
+    float circ3 = circle(vec2(mean3),1.0);
+
+
+    color = vec3(circle(st, 0.9)*pct);
+	color /= (circ - mean2);
+    color += (circ2-mean3);
+    color += circ3;
+
+
+    } else if (u_numpadValue == 2.0) {
+        
+    float pct = distance(st,vec2(0.2,sin(st.x)));
+	float circ = circle(vec2(u_fftAverage,u_fftAverage/1.4),0.5);
+    float circ2 = circle(vec2(0.5),1.0);
+    color = vec3(circle(st, 0.9)*pct);
+	color /= (circ - u_fftAverage);
+    color += circ2;
+} else {
+    float noiseValue = perlinNoise(st * 1.0 + u_time * 0.02+ranking6); // Scale and animate the noise
+    noiseValue = smoothstep(-3.800, 6.6, noiseValue); // Soften the noise edges
+
+    // Calculate gradient factor based on vertical position and noise
+    float gradientFactor = st.y * noiseValue;
+
+    // Interpolate between the colors based on the gradient factor
+    vec3 gradientColor = interpolateColors(gradientFactor);
+
+    // Apply the function to make some pixels in the top half flicker white
+    color = makeTopHalfFlicker(st, gradientColor);
+
+}
+    if (u_colorIndex > 0) {
+        vec3 midicolor = mcolors[u_colorIndex];
+        color = midicolor*color;
+        screenColor = vec4(color, 1.0);
+        } else {
+        screenColor = vec4(color, 1.0);
+        }
+    }
+
+
+

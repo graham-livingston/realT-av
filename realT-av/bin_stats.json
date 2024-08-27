@@ -1,0 +1,254 @@
+{
+    "Bin 1": {
+        "Frequency Range": [
+            0.0,
+            1049.9999333651401
+        ],
+        "Average Magnitude": 48621239.85138325,
+        "Max Magnitude": 14801135682.9464,
+        "Min Magnitude": 3438.9802978169464,
+        "Median": 21256328.87257766,
+        "Variance to Itself": 8256563642075313.0,
+        "Standard Deviation (Bin)": 90865635.09971915
+    },
+    "Bin 2": {
+        "Frequency Range": [
+            1049.9999333651401,
+            2099.9998667302802
+        ],
+        "Average Magnitude": 8613656.342664206,
+        "Max Magnitude": 639029856.824004,
+        "Min Magnitude": 153.08698878441447,
+        "Median": 5926847.2885925975,
+        "Variance to Itself": 105513958692633.55,
+        "Standard Deviation (Bin)": 10271998.768138241
+    },
+    "Bin 3": {
+        "Frequency Range": [
+            2099.9998667302802,
+            3149.99980009542
+        ],
+        "Average Magnitude": 5403873.173794439,
+        "Max Magnitude": 369622393.54031765,
+        "Min Magnitude": 436.72271984889466,
+        "Median": 3534361.164030417,
+        "Variance to Itself": 40651264230521.9,
+        "Standard Deviation (Bin)": 6375834.394847618
+    },
+    "Bin 4": {
+        "Frequency Range": [
+            3149.99980009542,
+            4199.9997334605605
+        ],
+        "Average Magnitude": 3766341.525117616,
+        "Max Magnitude": 424363342.63232845,
+        "Min Magnitude": 198.8219658613535,
+        "Median": 2487913.2745619006,
+        "Variance to Itself": 22350951893483.85,
+        "Standard Deviation (Bin)": 4727679.334883432
+    },
+    "Bin 5": {
+        "Frequency Range": [
+            4199.9997334605605,
+            5249.999666825701
+        ],
+        "Average Magnitude": 3250621.7103764103,
+        "Max Magnitude": 180554850.56846556,
+        "Min Magnitude": 508.40728282441336,
+        "Median": 2273769.3255964597,
+        "Variance to Itself": 11816040696832.525,
+        "Standard Deviation (Bin)": 3437446.828218951
+    },
+    "Bin 6": {
+        "Frequency Range": [
+            5249.999666825701,
+            6299.99960019084
+        ],
+        "Average Magnitude": 2763595.9848549105,
+        "Max Magnitude": 165548585.9890299,
+        "Min Magnitude": 172.53629835133557,
+        "Median": 1953612.1728099012,
+        "Variance to Itself": 8120356076991.217,
+        "Standard Deviation (Bin)": 2849623.8483335334
+    },
+    "Bin 7": {
+        "Frequency Range": [
+            6299.99960019084,
+            7349.999533555981
+        ],
+        "Average Magnitude": 2377249.0424733134,
+        "Max Magnitude": 100297718.69143291,
+        "Min Magnitude": 40.10938727438294,
+        "Median": 1859816.3396705876,
+        "Variance to Itself": 5305488815931.258,
+        "Standard Deviation (Bin)": 2303364.672806123
+    },
+    "Bin 8": {
+        "Frequency Range": [
+            7349.999533555981,
+            8399.999466921121
+        ],
+        "Average Magnitude": 2425706.3836038727,
+        "Max Magnitude": 128830155.9229235,
+        "Min Magnitude": 70.65108286641379,
+        "Median": 1889972.3553499281,
+        "Variance to Itself": 5217351755247.482,
+        "Standard Deviation (Bin)": 2284152.305615254
+    },
+    "Bin 9": {
+        "Frequency Range": [
+            8399.999466921121,
+            9449.99940028626
+        ],
+        "Average Magnitude": 2108842.457024512,
+        "Max Magnitude": 43706380.60556423,
+        "Min Magnitude": 119.50734525563944,
+        "Median": 1691200.9092433685,
+        "Variance to Itself": 3521885602464.906,
+        "Standard Deviation (Bin)": 1876668.7513956495
+    },
+    "Bin 10": {
+        "Frequency Range": [
+            9449.99940028626,
+            10499.999333651402
+        ],
+        "Average Magnitude": 1910676.0012090523,
+        "Max Magnitude": 40451309.25929434,
+        "Min Magnitude": 114.31004801379595,
+        "Median": 1516431.3709284354,
+        "Variance to Itself": 2933963686409.218,
+        "Standard Deviation (Bin)": 1712881.6907215798
+    },
+    "Bin 11": {
+        "Frequency Range": [
+            10499.999333651402,
+            11549.999267016541
+        ],
+        "Average Magnitude": 1839563.415463011,
+        "Max Magnitude": 73290825.16430384,
+        "Min Magnitude": 134.39455039520223,
+        "Median": 1455823.9988338074,
+        "Variance to Itself": 2972062218655.088,
+        "Standard Deviation (Bin)": 1723967.0004542104
+    },
+    "Bin 12": {
+        "Frequency Range": [
+            11549.999267016541,
+            12599.99920038168
+        ],
+        "Average Magnitude": 1487389.4917311396,
+        "Max Magnitude": 49848189.08186236,
+        "Min Magnitude": 89.08419182311226,
+        "Median": 1104887.6147390604,
+        "Variance to Itself": 2418137963570.961,
+        "Standard Deviation (Bin)": 1555036.322267413
+    },
+    "Bin 13": {
+        "Frequency Range": [
+            12599.99920038168,
+            13649.999133746822
+        ],
+        "Average Magnitude": 1356952.3817435636,
+        "Max Magnitude": 45554433.34579239,
+        "Min Magnitude": 63.82089539056499,
+        "Median": 915350.1473890257,
+        "Variance to Itself": 2727550309077.4097,
+        "Standard Deviation (Bin)": 1651529.6876161234
+    },
+    "Bin 14": {
+        "Frequency Range": [
+            13649.999133746822,
+            14699.999067111961
+        ],
+        "Average Magnitude": 1210825.321074374,
+        "Max Magnitude": 47797643.30131972,
+        "Min Magnitude": 57.63289682254721,
+        "Median": 721776.6477249269,
+        "Variance to Itself": 2972605427036.799,
+        "Standard Deviation (Bin)": 1724124.5393059049
+    },
+    "Bin 15": {
+        "Frequency Range": [
+            14699.999067111961,
+            15749.999000477103
+        ],
+        "Average Magnitude": 998607.1336933253,
+        "Max Magnitude": 57939337.90558931,
+        "Min Magnitude": 158.47699498090745,
+        "Median": 564851.4372174595,
+        "Variance to Itself": 2532356885805.0234,
+        "Standard Deviation (Bin)": 1591338.0802975285
+    },
+    "Bin 16": {
+        "Frequency Range": [
+            15749.999000477103,
+            16799.998933842242
+        ],
+        "Average Magnitude": 782976.4854323146,
+        "Max Magnitude": 33912111.81283267,
+        "Min Magnitude": 52.57447820631816,
+        "Median": 457907.743653149,
+        "Variance to Itself": 1374144467587.6155,
+        "Standard Deviation (Bin)": 1172239.0829466553
+    },
+    "Bin 17": {
+        "Frequency Range": [
+            16799.998933842242,
+            17849.99886720738
+        ],
+        "Average Magnitude": 627831.3463905347,
+        "Max Magnitude": 23306306.052566797,
+        "Min Magnitude": 98.43471830324877,
+        "Median": 375222.4295777797,
+        "Variance to Itself": 763785343597.524,
+        "Standard Deviation (Bin)": 873948.1355306641
+    },
+    "Bin 18": {
+        "Frequency Range": [
+            17849.99886720738,
+            18899.99880057252
+        ],
+        "Average Magnitude": 411835.53347316105,
+        "Max Magnitude": 26994475.07926312,
+        "Min Magnitude": 20.792863889959065,
+        "Median": 226186.76751183698,
+        "Variance to Itself": 410803760331.2078,
+        "Standard Deviation (Bin)": 640939.7478166008
+    },
+    "Bin 19": {
+        "Frequency Range": [
+            18899.99880057252,
+            19949.998733937664
+        ],
+        "Average Magnitude": 253737.62348044335,
+        "Max Magnitude": 18811554.378182195,
+        "Min Magnitude": 10.326327051481677,
+        "Median": 114886.9224531469,
+        "Variance to Itself": 174522812419.78244,
+        "Standard Deviation (Bin)": 417759.2756837153
+    },
+    "Bin 20": {
+        "Frequency Range": [
+            19949.998733937664,
+            20999.998667302803
+        ],
+        "Average Magnitude": 158088.7127496888,
+        "Max Magnitude": 15387417.669993207,
+        "Min Magnitude": 5.861315043525926,
+        "Median": 72041.35576351386,
+        "Variance to Itself": 83675448683.51894,
+        "Standard Deviation (Bin)": 289267.088835766
+    },
+    "Bin 21": {
+        "Frequency Range": [
+            20999.998667302803,
+            22049.998600667943
+        ],
+        "Average Magnitude": 71783.47161496207,
+        "Max Magnitude": 10310185.21981798,
+        "Min Magnitude": 2.6838725344615733,
+        "Median": 24085.13792160305,
+        "Variance to Itself": 29474035593.312317,
+        "Standard Deviation (Bin)": 171680.03842413455
+    }
+}
